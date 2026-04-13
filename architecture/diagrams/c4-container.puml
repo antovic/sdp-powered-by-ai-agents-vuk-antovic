@@ -1,0 +1,18 @@
+@startuml c4-container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram — Mars Rover
+
+Person(user, "Mission Controller", "Sends commands")
+System_Boundary(sys, "Mars Rover System") {
+  Container(cli, "CLI", "Python", "Accepts command string input from user")
+  Container(parser, "Command Parser", "Python", "Parses raw command string into command objects")
+  Container(rover, "Rover Engine", "Python", "Executes commands, maintains position and heading")
+  Container(grid, "Grid", "Python", "Defines boundaries and detects obstacles")
+}
+
+Rel(user, cli, "Inputs commands", "stdin")
+Rel(cli, parser, "Passes raw input")
+Rel(parser, rover, "Passes command list")
+Rel(rover, grid, "Checks boundaries and obstacles")
+@enduml

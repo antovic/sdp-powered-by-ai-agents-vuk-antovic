@@ -1,0 +1,17 @@
+@startuml c4-component-rover-engine
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram — Rover Engine
+
+Container_Boundary(engine, "Rover Engine") {
+  Component(cmd_handler, "CommandHandler", "Python class", "Dispatches commands to move/turn logic")
+  Component(mover, "Mover", "Python class", "Calculates new position for F/B commands")
+  Component(turner, "Turner", "Python class", "Updates heading for L/R commands")
+  Component(state, "RoverState", "Python dataclass", "Holds current position (x, y) and heading (N/S/E/W)")
+}
+
+Rel(cmd_handler, mover, "Delegates move commands")
+Rel(cmd_handler, turner, "Delegates turn commands")
+Rel(mover, state, "Updates position")
+Rel(turner, state, "Updates heading")
+@enduml

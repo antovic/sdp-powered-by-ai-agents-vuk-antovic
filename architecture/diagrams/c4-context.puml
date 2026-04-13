@@ -1,0 +1,10 @@
+@startuml c4-context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title System Context — Mars Rover
+
+Person(user, "Mission Controller", "Sends movement commands to the rover")
+System(rover, "Mars Rover System", "Parses and executes movement commands, tracks position and heading on a grid")
+
+Rel(user, rover, "Sends commands (F, B, L, R)", "CLI / API")
+@enduml
