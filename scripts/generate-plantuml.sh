@@ -2,14 +2,14 @@
 set -e
 
 PLANTUML_JAR="$HOME/.local/share/plantuml/plantuml.jar"
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.puml$' || true)
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.puml$' || true)
 
 if [ -z "$STAGED" ]; then
   exit 0
 fi
 
 if [ ! -f "$PLANTUML_JAR" ]; then
-  echo "⚠️  PlantUML jar not found at $PLANTUML_JAR. Run scripts/setup.sh first."
+  echo "⚠️  PlantUML jar not found at $PLANTUML_JAR. Install PlantUML and place plantuml.jar at this path, or update PLANTUML_JAR to match your local installation."
   exit 1
 fi
 

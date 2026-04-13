@@ -51,7 +51,6 @@ repos:
         name: Generate PlantUML SVGs
         entry: scripts/generate-plantuml.sh
         language: system
-        stages: [pre-commit]
         pass_filenames: false
 
   # Commit message format
