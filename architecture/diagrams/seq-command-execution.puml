@@ -1,0 +1,15 @@
+@startuml seq-command-execution
+participant Operator
+participant CLI
+participant Parser
+participant Engine
+participant Grid
+
+Operator -> CLI: "FFRFF"
+CLI -> Parser: parse("FFRFF")
+Parser -> Engine: [Forward, Forward, Right, Forward, Forward]
+Engine -> Grid: check_boundary(x, y)
+Grid --> Engine: ok
+Engine --> CLI: RoverState(x=2, y=2, heading=E)
+CLI --> Operator: "(2, 2, E)"
+@enduml

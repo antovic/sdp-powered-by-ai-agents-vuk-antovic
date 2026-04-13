@@ -1,0 +1,15 @@
+@startuml seq-obstacle-detected
+participant Operator
+participant CLI
+participant Parser
+participant Engine
+participant Grid
+
+Operator -> CLI: "FFF"
+CLI -> Parser: parse("FFF")
+Parser -> Engine: [Forward, Forward, Forward]
+Engine -> Grid: check_boundary(0, 2)
+Grid --> Engine: obstacle at (0, 2)
+Engine --> CLI: ObstacleError(last_safe=(0, 1))
+CLI --> Operator: "Obstacle at (0, 2), stopped at (0, 1)"
+@enduml

@@ -8,11 +8,11 @@ The system is a single Python application with four internal containers:
 - **Rover Engine** — executes commands against rover state
 - **Grid** — enforces boundaries and obstacles
 
-See diagram: `diagrams/c4-container.puml`
+![Container Diagram](diagrams/c4-container.svg)
 
 ## Level 2 — Rover Engine Components
 
-See diagram: `diagrams/c4-component-rover-engine.puml`
+![Component Diagram — Rover Engine](diagrams/c4-component-rover-engine.svg)
 
 | Component | Responsibility |
 |-----------|---------------|
