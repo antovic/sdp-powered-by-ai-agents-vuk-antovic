@@ -1,5 +1,5 @@
 @startuml c4-component-rover-engine
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include ./includes/C4_Component.puml
 
 title Component Diagram — Rover Engine
 

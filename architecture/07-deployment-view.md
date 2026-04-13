@@ -7,7 +7,7 @@ The Mars Rover kata is a local CLI application. There is no server, cloud, or da
 | Environment | Description |
 |-------------|-------------|
 | Developer machine | Python 3.12+, run via `python -m rover` or test runner |
-| CI (GitHub Actions) | Runs pre-commit hooks and unit tests on every push |
+| CI | Not currently configured in this repository; pre-commit hooks and unit tests are run locally |
 
 ## Runtime Dependencies
 
