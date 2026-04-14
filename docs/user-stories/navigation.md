@@ -7,7 +7,7 @@
 ## Original Story
 
 AS A mission controller
-I WANT to turn the rover forward or backwards with the `F` and `B` commands
+I WANT to move the rover forward and backward with the `F` and `B` commands
 SO THAT I can travel across the planet surface
 
 **Architecture Reference**: Chapter 5 — Building Block View (Mover component); Chapter 4 — Solution Strategy (command pattern)
@@ -24,49 +24,49 @@ SO THAT I can travel across the planet surface
 
 **THEN**
 * the rover's heading is `NORTH`
-* the rover's moves to `(0, 1)`
+* the rover moves to `(0, 1)`
 
-### SCENARIO 2: Move backwards from North
+### SCENARIO 2: Move backward from North wraps to southern edge
 
 **Scenario ID**: NAV-STORY-001-S2
 
 **GIVEN**
-* the rover is at position (0, 0) facing North
+* the rover is at position (0, 0) facing North on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `NORTH`
-* the rover's moves to `(0, -1)`
+* the rover moves to `(0, 4)` (wraps to southern edge)
 
-### SCENARIO 3: Move forward towards SOUTH
+### SCENARIO 3: Move forward towards South wraps to southern edge
 
 **Scenario ID**: NAV-STORY-001-S3
 
 **GIVEN**
-* the rover is at position (0, 0) facing South
+* the rover is at position (0, 0) facing South on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `F`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover's moves to `(0, -1)`
+* the rover moves to `(0, 4)` (wraps to southern edge)
 
-### SCENARIO 4: Move backwards from South
+### SCENARIO 4: Move backward from South moves north
 
 **Scenario ID**: NAV-STORY-001-S4
 
 **GIVEN**
-* the rover is at position (0, 0) facing South
+* the rover is at position (0, 0) facing South on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover's moves to `(0, 1)`
+* the rover moves to `(0, 1)`
 
 ---
 
