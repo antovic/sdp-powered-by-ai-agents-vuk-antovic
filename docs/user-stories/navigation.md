@@ -26,47 +26,49 @@ SO THAT I can travel across the planet surface
 * the rover's heading is `NORTH`
 * the rover moves to `(0, 1)`
 
-### SCENARIO 2: Move backward from North wraps to southern edge
+### SCENARIO 2: Move backward from North
 
 **Scenario ID**: NAV-STORY-001-S2
 
 **GIVEN**
-* the rover is at position (0, 0) facing North on a 5×5 grid
+* the rover is at position (0, 0) facing North
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `NORTH`
-* the rover moves to `(0, 4)` (wraps to southern edge)
+* the rover moves according to boundary rules defined in WORLD-STORY-002
 
-### SCENARIO 3: Move forward towards South wraps to southern edge
+### SCENARIO 3: Move forward towards South
 
 **Scenario ID**: NAV-STORY-001-S3
 
 **GIVEN**
-* the rover is at position (0, 0) facing South on a 5×5 grid
+* the rover is at position (0, 0) facing South
 
 **WHEN**
 * the mission controller submits the command `F`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover moves to `(0, 4)` (wraps to southern edge)
+* the rover moves according to boundary rules defined in WORLD-STORY-002
 
-### SCENARIO 4: Move backward from South moves north
+### SCENARIO 4: Move backward from South
 
 **Scenario ID**: NAV-STORY-001-S4
 
 **GIVEN**
-* the rover is at position (0, 0) facing South on a 5×5 grid
+* the rover is at position (0, 0) facing South
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover moves to `(0, 1)`
+* the rover moves according to boundary rules defined in WORLD-STORY-002
+
+**Dependencies**: WORLD-STORY-002 (boundary wrapping)
 
 ---
 
@@ -94,18 +96,18 @@ SO THAT movement is computed without mutating rover state
 **THEN**
 * it returns a new `RoverState` with `(x=0, y=1, heading=NORTH)`
 
-#### SCENARIO 2: Mover wraps to (0, 4) for B from (0, 0) facing NORTH
+#### SCENARIO 2: Mover delegates boundary handling for B from (0, 0) facing NORTH
 
 **Scenario ID**: NAV-BE-001.1-S2
 
 **GIVEN**
-* the current `RoverState` is `(x=0, y=0, heading=NORTH)` on a 5×5 grid
+* the current `RoverState` is `(x=0, y=0, heading=NORTH)`
 
 **WHEN**
 * the Mover processes command `B`
 
 **THEN**
-* it returns a new `RoverState` with `(x=0, y=4, heading=NORTH)`
+* it delegates the resulting coordinate to the Grid component for boundary resolution (see WORLD-STORY-002)
 
 ---
 

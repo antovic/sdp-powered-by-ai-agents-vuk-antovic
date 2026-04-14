@@ -164,8 +164,6 @@ SO THAT I am alerted when command processing degrades
 
 ---
 
----
-
 # INPUT-STORY-002: Reject invalid commands at parse time [SUPPORTING]
 
 ## Original Story
