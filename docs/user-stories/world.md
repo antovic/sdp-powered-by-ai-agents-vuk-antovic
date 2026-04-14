@@ -333,3 +333,153 @@ SO THAT unusual wrap patterns are visible in the operations dashboard
 
 **THEN**
 * the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+
+---
+
+# WORLD-STORY-003: Report current rover position [SUPPORTING]
+
+## Original Story
+
+AS A mission controller
+I WANT to query the rover's current position and heading without issuing movement commands
+SO THAT I can verify its state before planning the next command sequence
+
+**Architecture Reference**: Chapter 5 — Building Block View (RoverState); Chapter 8 — Cross-cutting Concepts (State Management)
+
+### SCENARIO 1: Query returns current position
+
+**Scenario ID**: WORLD-STORY-003-S1
+
+**GIVEN**
+* the rover is at position (2, 3) facing East
+
+**WHEN**
+* the mission controller queries the rover state
+
+**THEN**
+* the system returns `(2, 3, EAST)`
+
+---
+
+## BE Sub-stories
+
+### WORLD-BE-003.1: Read rover state without mutation
+
+AS A rover engine
+I WANT a read-only query operation that returns the current `RoverState`
+SO THAT position can be retrieved without side effects
+
+**Parent**: WORLD-STORY-003
+**Architecture Reference**: Chapter 5 — Building Block View (RoverState)
+
+#### SCENARIO 1: State query returns current RoverState
+
+**Scenario ID**: WORLD-BE-003.1-S1
+
+**GIVEN**
+* the current `RoverState` is `(x=2, y=3, heading=EAST)`
+
+**WHEN**
+* the engine processes a state query
+
+**THEN**
+* it returns `RoverState(x=2, y=3, heading=EAST)` without modifying state
+
+---
+
+## INFRA Sub-stories
+
+### WORLD-INFRA-003.1: Lambda deployment — state query handler
+
+AS A platform engineer
+I WANT a GET endpoint deployed as a Lambda function to query rover state
+SO THAT position can be retrieved via HTTP without issuing commands
+
+**Parent**: WORLD-STORY-003
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: GET request returns rover state
+
+**Scenario ID**: WORLD-INFRA-003.1-S1
+
+**GIVEN**
+* the rover Lambda is deployed with a state query handler
+* the rover is at position (2, 3) facing East
+
+**WHEN**
+* a GET request is sent to `/rover/state`
+
+**THEN**
+* it returns HTTP 200 with body `{"x": 2, "y": 3, "heading": "EAST"}`
+
+---
+
+### WORLD-INFRA-003.2: Data store — read rover state from DynamoDB
+
+AS A platform engineer
+I WANT the state query handler to read from the DynamoDB rover state table
+SO THAT the current position is retrieved from persistent storage
+
+**Parent**: WORLD-STORY-003
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: State is read from DynamoDB
+
+**Scenario ID**: WORLD-INFRA-003.2-S1
+
+**GIVEN**
+* the DynamoDB table contains a record with `x: 2, y: 3, heading: "EAST"`
+
+**WHEN**
+* the Lambda queries the table
+
+**THEN**
+* it retrieves the record and returns the state
+
+---
+
+### WORLD-INFRA-003.3: Event handling — state query event
+
+AS A platform engineer
+I WANT a `StateQueried` event published to EventBridge after each state query
+SO THAT telemetry can track query frequency independently
+
+**Parent**: WORLD-STORY-003
+**Architecture Reference**: Chapter 6 — Runtime View
+
+#### SCENARIO 1: StateQueried event is published
+
+**Scenario ID**: WORLD-INFRA-003.3-S1
+
+**GIVEN**
+* the Lambda has processed a state query
+
+**WHEN**
+* the event handler publishes to EventBridge
+
+**THEN**
+* a `StateQueried` event appears with `roverId` and `timestamp`
+
+---
+
+### WORLD-INFRA-003.4: Monitoring and alarms — state query rate
+
+AS A platform engineer
+I WANT a CloudWatch metric tracking the frequency of state queries
+SO THAT query patterns are visible in the operations dashboard
+
+**Parent**: WORLD-STORY-003
+**Architecture Reference**: Chapter 10 — Quality Requirements
+
+#### SCENARIO 1: Query metric is emitted
+
+**Scenario ID**: WORLD-INFRA-003.4-S1
+
+**GIVEN**
+* the Lambda has processed a state query
+
+**WHEN**
+* the Lambda publishes a custom CloudWatch metric `StateQueryCount`
+
+**THEN**
+* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
