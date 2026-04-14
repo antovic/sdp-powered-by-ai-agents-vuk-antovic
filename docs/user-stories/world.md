@@ -483,3 +483,306 @@ SO THAT query patterns are visible in the operations dashboard
 
 **THEN**
 * the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+
+
+---
+
+# WORLD-STORY-004: Add obstacle to grid at runtime [SUPPORTING]
+
+## Original Story
+
+AS A mission controller
+I WANT to add a new obstacle to the grid at a specified coordinate
+SO THAT I can update the terrain map without redeploying the system
+
+**Architecture Reference**: Chapter 5 — Building Block View (Grid component); Chapter 8 — Cross-cutting Concepts (Configuration Management)
+
+### SCENARIO 1: Add obstacle at valid coordinate
+
+**Scenario ID**: WORLD-STORY-004-S1
+
+**GIVEN**
+* the grid is 5×5
+* no obstacle exists at (2, 3)
+
+**WHEN**
+* the mission controller adds an obstacle at (2, 3)
+
+**THEN**
+* the grid contains an obstacle at (2, 3)
+* subsequent move commands to (2, 3) are blocked
+
+---
+
+## BE Sub-stories
+
+### WORLD-BE-004.1: Insert obstacle into grid state
+
+AS A rover engine
+I WANT the Grid component to accept a new obstacle coordinate and update its internal state
+SO THAT the obstacle is immediately active for collision detection
+
+**Parent**: WORLD-STORY-004
+**Architecture Reference**: Chapter 5 — Building Block View (Grid component)
+
+#### SCENARIO 1: Grid state includes new obstacle
+
+**Scenario ID**: WORLD-BE-004.1-S1
+
+**GIVEN**
+* the Grid has obstacles at `[(0,1)]`
+
+**WHEN**
+* the Grid processes an add-obstacle command for `(2,3)`
+
+**THEN**
+* the Grid's obstacle set is `[(0,1), (2,3)]`
+
+---
+
+## INFRA Sub-stories
+
+### WORLD-INFRA-004.1: Lambda deployment — add obstacle handler
+
+AS A platform engineer
+I WANT a POST endpoint deployed as a Lambda function to add obstacles
+SO THAT obstacles can be inserted via HTTP
+
+**Parent**: WORLD-STORY-004
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: POST request adds obstacle
+
+**Scenario ID**: WORLD-INFRA-004.1-S1
+
+**GIVEN**
+* the rover Lambda is deployed with an add-obstacle handler
+
+**WHEN**
+* a POST request is sent to `/grid/obstacles` with body `{"x": 2, "y": 3}`
+
+**THEN**
+* it returns HTTP 201 with body `{"message": "Obstacle added at (2, 3)"}`
+
+---
+
+### WORLD-INFRA-004.2: Data store — persist obstacle in DynamoDB
+
+AS A platform engineer
+I WANT new obstacles written to the DynamoDB grid table
+SO THAT they persist across Lambda invocations
+
+**Parent**: WORLD-STORY-004
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: Obstacle is persisted
+
+**Scenario ID**: WORLD-INFRA-004.2-S1
+
+**GIVEN**
+* the Lambda has processed an add-obstacle command for (2, 3)
+
+**WHEN**
+* the handler writes to DynamoDB
+
+**THEN**
+* the grid record's `obstacles` attribute includes `[2, 3]`
+
+---
+
+### WORLD-INFRA-004.3: Event handling — obstacle added event
+
+AS A platform engineer
+I WANT an `ObstacleAdded` event published to EventBridge after adding an obstacle
+SO THAT downstream systems can react to terrain changes
+
+**Parent**: WORLD-STORY-004
+**Architecture Reference**: Chapter 6 — Runtime View
+
+#### SCENARIO 1: ObstacleAdded event is published
+
+**Scenario ID**: WORLD-INFRA-004.3-S1
+
+**GIVEN**
+* the Lambda has added an obstacle at (2, 3)
+
+**WHEN**
+* the event handler publishes to EventBridge
+
+**THEN**
+* an `ObstacleAdded` event appears with `coordinate: {x: 2, y: 3}` and `gridId`
+
+---
+
+### WORLD-INFRA-004.4: Monitoring and alarms — obstacle modification rate
+
+AS A platform engineer
+I WANT a CloudWatch metric tracking obstacle add/remove operations
+SO THAT terrain modification patterns are visible
+
+**Parent**: WORLD-STORY-004
+**Architecture Reference**: Chapter 10 — Quality Requirements
+
+#### SCENARIO 1: Add metric is emitted
+
+**Scenario ID**: WORLD-INFRA-004.4-S1
+
+**GIVEN**
+* the Lambda has added an obstacle
+
+**WHEN**
+* the Lambda publishes a custom CloudWatch metric `ObstacleAddCount`
+
+**THEN**
+* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+
+---
+
+# WORLD-STORY-005: Remove obstacle from grid [SUPPORTING]
+
+## Original Story
+
+AS A mission controller
+I WANT to remove an existing obstacle from the grid
+SO THAT I can clear paths that are no longer blocked
+
+**Architecture Reference**: Chapter 5 — Building Block View (Grid component); Chapter 8 — Cross-cutting Concepts (Configuration Management)
+
+### SCENARIO 1: Remove existing obstacle
+
+**Scenario ID**: WORLD-STORY-005-S1
+
+**GIVEN**
+* the grid contains an obstacle at (2, 3)
+
+**WHEN**
+* the mission controller removes the obstacle at (2, 3)
+
+**THEN**
+* the grid no longer contains an obstacle at (2, 3)
+* subsequent move commands to (2, 3) succeed
+
+---
+
+## BE Sub-stories
+
+### WORLD-BE-005.1: Delete obstacle from grid state
+
+AS A rover engine
+I WANT the Grid component to remove an obstacle coordinate from its internal state
+SO THAT the coordinate is immediately passable
+
+**Parent**: WORLD-STORY-005
+**Architecture Reference**: Chapter 5 — Building Block View (Grid component)
+
+#### SCENARIO 1: Grid state excludes removed obstacle
+
+**Scenario ID**: WORLD-BE-005.1-S1
+
+**GIVEN**
+* the Grid has obstacles at `[(0,1), (2,3)]`
+
+**WHEN**
+* the Grid processes a remove-obstacle command for `(2,3)`
+
+**THEN**
+* the Grid's obstacle set is `[(0,1)]`
+
+---
+
+## INFRA Sub-stories
+
+### WORLD-INFRA-005.1: Lambda deployment — remove obstacle handler
+
+AS A platform engineer
+I WANT a DELETE endpoint deployed as a Lambda function to remove obstacles
+SO THAT obstacles can be deleted via HTTP
+
+**Parent**: WORLD-STORY-005
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: DELETE request removes obstacle
+
+**Scenario ID**: WORLD-INFRA-005.1-S1
+
+**GIVEN**
+* the rover Lambda is deployed with a remove-obstacle handler
+* an obstacle exists at (2, 3)
+
+**WHEN**
+* a DELETE request is sent to `/grid/obstacles/2/3`
+
+**THEN**
+* it returns HTTP 200 with body `{"message": "Obstacle removed from (2, 3)"}`
+
+---
+
+### WORLD-INFRA-005.2: Data store — delete obstacle from DynamoDB
+
+AS A platform engineer
+I WANT removed obstacles deleted from the DynamoDB grid table
+SO THAT they do not reappear on Lambda restart
+
+**Parent**: WORLD-STORY-005
+**Architecture Reference**: Chapter 7 — Deployment View
+
+#### SCENARIO 1: Obstacle is deleted
+
+**Scenario ID**: WORLD-INFRA-005.2-S1
+
+**GIVEN**
+* the DynamoDB grid record contains obstacle `[2, 3]`
+
+**WHEN**
+* the Lambda processes a remove-obstacle command
+
+**THEN**
+* the grid record's `obstacles` attribute no longer includes `[2, 3]`
+
+---
+
+### WORLD-INFRA-005.3: Event handling — obstacle removed event
+
+AS A platform engineer
+I WANT an `ObstacleRemoved` event published to EventBridge after removing an obstacle
+SO THAT downstream systems can react to terrain changes
+
+**Parent**: WORLD-STORY-005
+**Architecture Reference**: Chapter 6 — Runtime View
+
+#### SCENARIO 1: ObstacleRemoved event is published
+
+**Scenario ID**: WORLD-INFRA-005.3-S1
+
+**GIVEN**
+* the Lambda has removed an obstacle from (2, 3)
+
+**WHEN**
+* the event handler publishes to EventBridge
+
+**THEN**
+* an `ObstacleRemoved` event appears with `coordinate: {x: 2, y: 3}` and `gridId`
+
+---
+
+### WORLD-INFRA-005.4: Monitoring and alarms — obstacle modification rate
+
+AS A platform engineer
+I WANT a CloudWatch metric tracking obstacle remove operations
+SO THAT terrain modification patterns are visible
+
+**Parent**: WORLD-STORY-005
+**Architecture Reference**: Chapter 10 — Quality Requirements
+
+#### SCENARIO 1: Remove metric is emitted
+
+**Scenario ID**: WORLD-INFRA-005.4-S1
+
+**GIVEN**
+* the Lambda has removed an obstacle
+
+**WHEN**
+* the Lambda publishes a custom CloudWatch metric `ObstacleRemoveCount`
+
+**THEN**
+* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
