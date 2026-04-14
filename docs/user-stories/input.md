@@ -88,7 +88,7 @@ SO THAT command sequences can be submitted via an API without a running server
 * it is invoked with a JSON payload `{"commands": "FFRFF"}` and rover at (0, 0) facing North
 
 **THEN**
-* it returns HTTP 200 with body `{"x": 2, "y": 2, "heading": "NORTH"}`
+* it returns HTTP 200 with body `{"x": 2, "y": 2, "heading": "EAST"}`
 
 ---
 
