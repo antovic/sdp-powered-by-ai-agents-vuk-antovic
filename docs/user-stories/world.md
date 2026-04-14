@@ -194,6 +194,20 @@ SO THAT it never moves to an undefined position outside the grid
 **THEN**
 * the rover wraps to position (0, 0)
 
+### SCENARIO 2: Rover wraps at eastern boundary
+
+**Scenario ID**: WORLD-STORY-002-S2
+
+**GIVEN**
+* the grid is 5×5
+* the rover is at position (4, 0) facing East
+
+**WHEN**
+* the mission controller submits `F`
+
+**THEN**
+* the rover wraps to position (0, 0)
+
 ---
 
 ## BE Sub-stories

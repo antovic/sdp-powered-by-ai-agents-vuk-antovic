@@ -128,6 +128,7 @@ SO THAT move commands are executed in a single serverless invocation
 
 **GIVEN**
 * the rover Lambda is deployed with the Mover component
+* the rover is at position (0, 0) facing North
 
 **WHEN**
 * it is invoked with payload `{"commands": "FF"}`
