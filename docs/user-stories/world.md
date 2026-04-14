@@ -170,8 +170,6 @@ SO THAT a sudden increase in obstacle collisions is visible and alertable
 
 ---
 
----
-
 # WORLD-STORY-002: Enforce grid boundaries [SUPPORTING]
 
 ## Original Story
