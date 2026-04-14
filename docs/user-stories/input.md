@@ -85,10 +85,10 @@ SO THAT command sequences can be submitted via an API without a running server
 * the Lambda function is deployed with the rover package
 
 **WHEN**
-* it is invoked with a JSON payload containing a command string
+* it is invoked with a JSON payload `{"commands": "FFRFF"}` and rover at (0, 0) facing North
 
 **THEN**
-* it returns a JSON response with the final position and heading
+* it returns HTTP 200 with body `{"x": 2, "y": 2, "heading": "NORTH"}`
 
 ---
 

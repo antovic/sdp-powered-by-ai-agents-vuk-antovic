@@ -31,42 +31,42 @@ SO THAT I can travel across the planet surface
 **Scenario ID**: NAV-STORY-001-S2
 
 **GIVEN**
-* the rover is at position (0, 0) facing North
+* the rover is at position (0, 0) facing North on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `NORTH`
-* the rover moves according to boundary rules defined in WORLD-STORY-002
+* the rover moves to `(0, 4)` (boundary wrapping per WORLD-STORY-002)
 
 ### SCENARIO 3: Move forward towards South
 
 **Scenario ID**: NAV-STORY-001-S3
 
 **GIVEN**
-* the rover is at position (0, 0) facing South
+* the rover is at position (0, 0) facing South on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `F`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover moves according to boundary rules defined in WORLD-STORY-002
+* the rover moves to `(0, 4)` (boundary wrapping per WORLD-STORY-002)
 
 ### SCENARIO 4: Move backward from South
 
 **Scenario ID**: NAV-STORY-001-S4
 
 **GIVEN**
-* the rover is at position (0, 0) facing South
+* the rover is at position (0, 0) facing South on a 5×5 grid
 
 **WHEN**
 * the mission controller submits the command `B`
 
 **THEN**
 * the rover's heading is `SOUTH`
-* the rover moves according to boundary rules defined in WORLD-STORY-002
+* the rover moves to `(0, 1)` (boundary wrapping per WORLD-STORY-002)
 
 **Dependencies**: WORLD-STORY-002 (boundary wrapping)
 
@@ -133,7 +133,7 @@ SO THAT move commands are executed in a single serverless invocation
 * it is invoked with payload `{"commands": "FF"}`
 
 **THEN**
-* it returns the correct final position with HTTP 200
+* it returns HTTP 200 with body `{"x": 0, "y": 2, "heading": "NORTH"}`
 
 ---
 
@@ -323,7 +323,7 @@ SO THAT turn commands are executed in the same serverless invocation as move com
 * it is invoked with payload `{"commands": "LR"}`
 
 **THEN**
-* it returns the correct final heading with HTTP 200
+* it returns HTTP 200 with body `{"x": 0, "y": 0, "heading": "NORTH"}`
 
 ---
 
