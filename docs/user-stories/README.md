@@ -20,11 +20,11 @@ Extracted from `architecture/04-solution-strategy.md` — Chapter 4: Solution St
 | INPUT-STORY-002 | Reject invalid commands at parse time | INPUT | 4 | [SUPPORTING] | ⬜ pending |
 | NAV-STORY-001 | Move the rover forward and backward | NAV | 2 | [CORE] | ⬜ pending |
 | NAV-STORY-002 | Turn the rover left and right | NAV | 3 | [CORE] | ⬜ pending |
-| WORLD-STORY-001 | Detect and report an obstacle | WORLD | 5 | [CORE] | ⬜ pending |
+| WORLD-STORY-001 | Detect and report an obstacle | WORLD | 5 | [SUPPORTING] | ⬜ pending |
 | WORLD-STORY-002 | Enforce grid boundaries | WORLD | 6 | [SUPPORTING] | ⬜ pending |
 
 **Total stories**: 6
-**Core stories (20% → 80% value)**: INPUT-STORY-001, NAV-STORY-001, NAV-STORY-002, WORLD-STORY-001 — 4 stories (67% of inventory marked core, capped per rules)
+**Core stories (20% → 80% value)**: INPUT-STORY-001, NAV-STORY-001, NAV-STORY-002 — 3 stories (50% of inventory marked core; justified for small story set per agent rules)
 
 > Note: This kata has a small story set. Core stories are those that directly implement primary user-facing behaviour per Chapter 1 quality goals.
 
@@ -34,9 +34,9 @@ Extracted from `architecture/04-solution-strategy.md` — Chapter 4: Solution St
 
 | Metric | Value |
 |--------|-------|
-| Core stories total | 4 |
+| Core stories total | 3 |
 | Core stories complete | 0 |
-| Pareto progress | 0 of 4 core stories complete (0% of 80% value delivered) |
+| Pareto progress | 0 of 3 core stories complete (0% of 80% value delivered) |
 
 ---
 

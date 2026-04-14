@@ -2,7 +2,7 @@
 
 ---
 
-# WORLD-STORY-001: Detect and report an obstacle [CORE]
+# WORLD-STORY-001: Detect and report an obstacle [SUPPORTING]
 
 ## Original Story
 
