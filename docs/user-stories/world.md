@@ -177,7 +177,7 @@ SO THAT a sudden increase in obstacle collisions is visible and alertable
 ## Original Story
 
 AS A mission controller
-I WANT the rover to wrap around or stop at grid boundaries
+I WANT the rover to wrap around at grid boundaries
 SO THAT it never moves to an undefined position outside the grid
 
 **Architecture Reference**: Chapter 5 — Building Block View (Grid component); Chapter 2 — Constraints
