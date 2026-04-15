@@ -44,6 +44,15 @@ repos:
     hooks:
       - id: detect-secrets
 
+  # PlantUML SVG generation
+  - repo: local
+    hooks:
+      - id: generate-plantuml
+        name: Generate PlantUML SVGs
+        entry: scripts/generate-plantuml.sh
+        language: system
+        pass_filenames: false
+
   # Commit message format
   - repo: local
     hooks:
