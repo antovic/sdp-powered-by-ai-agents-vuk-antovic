@@ -60,7 +60,8 @@ repos:
         name: Docker build and test
         entry: scripts/hooks/docker-test.sh
         language: system
-        stages: [pre-commit]
+        stages: [pre-push]
+        files: ^(src/|tests/|Dockerfile|requirements\.txt)
         pass_filenames: false
 
   # Commit message format
