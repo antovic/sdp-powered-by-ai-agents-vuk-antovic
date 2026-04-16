@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit hook: build Docker image and run tests before committing
+# Pre-push hook: build Docker image and run tests before pushing
 
 set -e
 
