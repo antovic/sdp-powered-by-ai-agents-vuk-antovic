@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-      - 'feat/**'
-      - 'fix/**'
     paths:
       - 'src/**'
       - 'tests/**'
