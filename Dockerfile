@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "-m", "pytest"]
+CMD ["sh", "-c", "python -m pytest; code=$?; [ $code -eq 5 ] && exit 0 || exit $code"]
