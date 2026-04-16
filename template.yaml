@@ -12,8 +12,13 @@ Resources:
   KataTestFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: .
-      Handler: src.handler.lambda_handler
+      Handler: index.lambda_handler
+      InlineCode: |
+        def lambda_handler(event, context):
+            return {
+                "statusCode": 200,
+                "body": "Kata test runner Lambda"
+            }
       Description: Runs kata tests on demand
       Environment:
         Variables:

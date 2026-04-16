@@ -1,5 +1,6 @@
 .git
 .github
+.kiro
 docs
 architecture
 **/__pycache__

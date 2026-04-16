@@ -4,9 +4,14 @@
 set -e
 
 IMAGE="kata-tests"
+DOCKER_BUILD_QUIET="${DOCKER_BUILD_QUIET:-0}"
 
 echo "🐳 Building Docker image..."
-docker build -t "$IMAGE" . >/dev/null
+if [ "$DOCKER_BUILD_QUIET" = "1" ]; then
+  docker build -t "$IMAGE" . >/dev/null
+else
+  docker build -t "$IMAGE" .
+fi
 
 echo "🧪 Running tests..."
 docker run --rm "$IMAGE"
