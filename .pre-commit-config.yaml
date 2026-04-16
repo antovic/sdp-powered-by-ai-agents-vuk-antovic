@@ -61,7 +61,7 @@ repos:
         entry: scripts/hooks/docker-test.sh
         language: system
         stages: [pre-push]
-        files: ^(src/|tests/|Dockerfile|requirements\.txt|pyproject\.toml)
+        files: ^(src/|tests/|Dockerfile|\.dockerignore|requirements\.txt|pyproject\.toml)
         pass_filenames: false
 
   # Commit message format
