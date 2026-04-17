@@ -53,6 +53,17 @@ repos:
         language: system
         pass_filenames: false
 
+  # Docker build and test
+  - repo: local
+    hooks:
+      - id: docker-test
+        name: Docker build and test
+        entry: scripts/hooks/docker-test.sh
+        language: system
+        stages: [pre-push]
+        files: ^(src/|tests/|Dockerfile|\.dockerignore|requirements\.txt|pyproject\.toml)
+        pass_filenames: false
+
   # Commit message format
   - repo: local
     hooks:

@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Kata test runner Lambda function
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.12
+
+Resources:
+  KataTestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.lambda_handler
+      InlineCode: |
+        def lambda_handler(event, context):
+            return {
+                "statusCode": 200,
+                "body": "Kata test runner Lambda"
+            }
+      Description: Runs kata tests on demand
+      Environment:
+        Variables:
+          ENVIRONMENT: production
+
+Outputs:
+  KataTestFunctionArn:
+    Description: ARN of the kata test Lambda function
+    Value: !GetAtt KataTestFunction.Arn
