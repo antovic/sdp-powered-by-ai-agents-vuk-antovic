@@ -25,6 +25,16 @@ class Grid:
         return x % self.width, y % self.height
 
 
+class Turner:
+    _LEFT = [Heading.NORTH, Heading.WEST, Heading.SOUTH, Heading.EAST]
+    _RIGHT = [Heading.NORTH, Heading.EAST, Heading.SOUTH, Heading.WEST]
+
+    def turn(self, state: RoverState, command: str) -> RoverState:
+        seq = self._LEFT if command == "L" else self._RIGHT
+        new_heading = seq[(seq.index(state.heading) + 1) % 4]
+        return RoverState(x=state.x, y=state.y, heading=new_heading)
+
+
 class Mover:
     _DELTAS = {
         Heading.NORTH: (0, 1),
