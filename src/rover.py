@@ -23,9 +23,16 @@ class ObstacleError(Exception):
 
 class Grid:
     def __init__(self, width: int, height: int, obstacles: set[tuple[int, int]] = None):
+        if width <= 0:
+            raise ValueError("Grid width must be positive")
+        if height <= 0:
+            raise ValueError("Grid height must be positive")
         self.width = width
         self.height = height
         self.obstacles = obstacles or set()
+        for x, y in self.obstacles:
+            if not (0 <= x < width and 0 <= y < height):
+                raise ValueError(f"Obstacle at ({x},{y}) is outside grid bounds ({width}x{height})")
 
     def wrap(self, x: int, y: int) -> tuple[int, int]:
         return x % self.width, y % self.height
