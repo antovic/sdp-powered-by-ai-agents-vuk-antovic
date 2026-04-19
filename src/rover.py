@@ -41,6 +41,12 @@ class Grid:
         if (x, y) in self.obstacles:
             raise ObstacleError(last_safe)
 
+    def add_obstacle(self, x: int, y: int) -> None:
+        self.obstacles.add((x, y))
+
+    def remove_obstacle(self, x: int, y: int) -> None:
+        self.obstacles.discard((x, y))
+
 
 class CommandHistory:
     def __init__(self):
