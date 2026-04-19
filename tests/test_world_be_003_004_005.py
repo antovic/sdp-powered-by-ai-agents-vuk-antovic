@@ -8,9 +8,10 @@ def test_world_be_003_1_s1_state_query_returns_rover_state_without_mutation():
     # GIVEN
     state = RoverState(x=2, y=3, heading=Heading.EAST)
 
-    # WHEN / THEN — RoverState is frozen: any mutation attempt raises FrozenInstanceError
+    # WHEN / THEN — RoverState is frozen; any mutation raises FrozenInstanceError.
     with pytest.raises(FrozenInstanceError):
         state.x = 99  # type: ignore[misc]
+    assert state == RoverState(x=2, y=3, heading=Heading.EAST)
 
 
 def test_world_be_004_1_s1_grid_state_includes_new_obstacle():

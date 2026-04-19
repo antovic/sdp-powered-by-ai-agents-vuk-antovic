@@ -18,11 +18,14 @@ class RoverState:
 
 class ObstacleError(Exception):
     def __init__(self, last_safe_state: "RoverState"):
+        super().__init__(f"Obstacle encountered. Last safe state: {last_safe_state}")
         self.last_safe_state = last_safe_state
 
 
 class Grid:
-    def __init__(self, width: int, height: int, obstacles: set[tuple[int, int]] = None):
+    def __init__(
+        self, width: int, height: int, obstacles: set[tuple[int, int]] = None
+    ):
         if width <= 0:
             raise ValueError("Grid width must be positive")
         if height <= 0:
@@ -32,7 +35,9 @@ class Grid:
         self.obstacles = set(obstacles) if obstacles is not None else set()
         for x, y in self.obstacles:
             if not (0 <= x < width and 0 <= y < height):
-                raise ValueError(f"Obstacle at ({x},{y}) is outside grid bounds ({width}x{height})")
+                raise ValueError(
+                    f"Obstacle at ({x},{y}) is outside grid bounds ({width}x{height})"
+                )
 
     def wrap(self, x: int, y: int) -> tuple[int, int]:
         return x % self.width, y % self.height
@@ -43,7 +48,10 @@ class Grid:
 
     def add_obstacle(self, x: int, y: int) -> None:
         if not (0 <= x < self.width and 0 <= y < self.height):
-            raise ValueError(f"Obstacle at ({x},{y}) is outside grid bounds ({self.width}x{self.height})")
+            raise ValueError(
+                f"Obstacle at ({x},{y}) is outside grid bounds "
+                f"({self.width}x{self.height})"
+            )
         self.obstacles.add((x, y))
 
     def remove_obstacle(self, x: int, y: int) -> None:
@@ -54,8 +62,16 @@ class CommandHistory:
     def __init__(self):
         self._records: list[dict] = []
 
-    def record(self, command_string: str, timestamp: str, final_position: tuple) -> None:
-        self._records.append({"commandString": command_string, "timestamp": timestamp, "finalPosition": final_position})
+    def record(
+        self, command_string: str, timestamp: str, final_position: tuple
+    ) -> None:
+        self._records.append(
+            {
+                "commandString": command_string,
+                "timestamp": timestamp,
+                "finalPosition": final_position,
+            }
+        )
 
     def query(self) -> list[dict]:
         return sorted(self._records, key=lambda r: r["timestamp"], reverse=True)
@@ -67,7 +83,9 @@ class CommandParser:
     def parse(self, command_string: str) -> list[str]:
         for ch in command_string:
             if ch not in self._VALID:
-                raise ValueError(f"Invalid command '{ch}'. Allowed commands: F, B, L, R")
+                raise ValueError(
+                    f"Invalid command '{ch}'. Allowed commands: F, B, L, R"
+                )
         return list(command_string)
 
 
@@ -77,7 +95,9 @@ class Turner:
 
     def turn(self, state: RoverState, command: str) -> RoverState:
         if command not in {"L", "R"}:
-            raise ValueError(f"Invalid turn command '{command}'. Allowed commands: L, R")
+            raise ValueError(
+                f"Invalid turn command '{command}'. Allowed commands: L, R"
+            )
         seq = self._LEFT if command == "L" else self._RIGHT
         new_heading = seq[(seq.index(state.heading) + 1) % 4]
         return RoverState(x=state.x, y=state.y, heading=new_heading)
@@ -96,7 +116,9 @@ class Mover:
 
     def move(self, state: RoverState, command: str) -> RoverState:
         if command not in {"F", "B"}:
-            raise ValueError(f"Invalid move command '{command}'. Allowed commands: F, B")
+            raise ValueError(
+                f"Invalid move command '{command}'. Allowed commands: F, B"
+            )
         dx, dy = self._DELTAS[state.heading]
         if command == "B":
             dx, dy = -dx, -dy

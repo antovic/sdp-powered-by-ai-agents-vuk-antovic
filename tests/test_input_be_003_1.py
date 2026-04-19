@@ -2,7 +2,7 @@
 from src.rover import CommandHistory
 
 
-def test_input_be_003_1_s1_query_returns_history_ordered_by_timestamp_descending():
+def test_input_be_003_1_s1_query_returns_history_in_desc_timestamp_order():
     # GIVEN
     history = CommandHistory()
     history.record("FF", "T1", (0, 2, "NORTH"))
