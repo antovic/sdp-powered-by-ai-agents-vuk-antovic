@@ -35,6 +35,17 @@ class Grid:
             raise ObstacleError(last_safe)
 
 
+class CommandHistory:
+    def __init__(self):
+        self._records: list[dict] = []
+
+    def record(self, command_string: str, timestamp: str, final_position: tuple) -> None:
+        self._records.append({"commandString": command_string, "timestamp": timestamp, "finalPosition": final_position})
+
+    def query(self) -> list[dict]:
+        return sorted(self._records, key=lambda r: r["timestamp"], reverse=True)
+
+
 class CommandParser:
     _VALID = frozenset("FBLR")
 
