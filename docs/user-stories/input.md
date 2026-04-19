@@ -68,99 +68,103 @@ SO THAT I can execute each command without knowing the raw input format
 
 ## INFRA Sub-stories
 
-### INPUT-INFRA-001.1: Lambda deployment — CLI handler
+### INPUT-INFRA-001.1: Docker build — CLI component included
 
 AS A platform engineer
-I WANT the CLI entry point deployed as an AWS Lambda function
-SO THAT command sequences can be submitted via an API without a running server
+I WANT the Dockerfile to build successfully with the CLI and Command Parser components present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: INPUT-STORY-001
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda executes on invocation
+#### SCENARIO 1: Docker image builds with CLI component
 
 **Scenario ID**: INPUT-INFRA-001.1-S1
 
 **GIVEN**
-* the Lambda function is deployed with the rover package
+* the CLI and Command Parser source files are present in the repository
 
 **WHEN**
-* it is invoked with a JSON payload `{"commands": "FFRFF"}` and rover at (0, 0) facing North
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `{"x": 2, "y": 2, "heading": "EAST"}`
+* the build completes with exit code 0
+* the image `kata-tests` is available locally
 
 ---
 
-### INPUT-INFRA-001.2: Data store — command audit log (DynamoDB)
+### INPUT-INFRA-001.2: Test execution — CLI tests run in Docker
 
 AS A platform engineer
-I WANT each command sequence and its result stored in a DynamoDB table
-SO THAT mission history is auditable
+I WANT `docker run --rm kata-tests` to execute the CLI and Command Parser test suite
+SO THAT input handling is verified inside the container
 
 **Parent**: INPUT-STORY-001
-**Architecture Reference**: Chapter 7 — Deployment View; Chapter 8 — Cross-cutting Concepts
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Successful execution is persisted
+#### SCENARIO 1: CLI tests pass inside Docker
 
 **Scenario ID**: INPUT-INFRA-001.2-S1
 
 **GIVEN**
-* the Lambda has processed a command sequence successfully
+* the `kata-tests` image has been built
 
 **WHEN**
-* the handler writes the result to DynamoDB
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* a record exists with `commandString`, `finalPosition`, and `timestamp` attributes
+* pytest collects and runs all INPUT-BE-001 tests
+* the container exits with code 0
 
 ---
 
-### INPUT-INFRA-001.3: Event handling — command received event
+### INPUT-INFRA-001.3: Dependencies — CLI dependencies installed
 
 AS A platform engineer
-I WANT a `CommandReceived` event published to EventBridge after each invocation
-SO THAT downstream consumers (e.g., monitoring) can react without coupling to the Lambda
+I WANT all packages required by the CLI component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: INPUT-STORY-001
-**Architecture Reference**: Chapter 6 — Runtime View (Scenario 1)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Event is published on successful parse
+#### SCENARIO 1: Docker build installs all CLI dependencies
 
 **Scenario ID**: INPUT-INFRA-001.3-S1
 
 **GIVEN**
-* the Lambda has successfully parsed a command string
+* `requirements.txt` lists all packages needed by the CLI component
 
 **WHEN**
-* the handler publishes to the EventBridge bus
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `CommandReceived` event appears on the bus with the command string and rover ID
+* all dependencies install without error
+* the CLI module imports successfully inside the container
 
 ---
 
-### INPUT-INFRA-001.4: Monitoring and alarms — CLI Lambda
+### INPUT-INFRA-001.4: CI verification — CLI pipeline is GREEN
 
 AS A platform engineer
-I WANT CloudWatch alarms on the CLI Lambda's error rate and duration
-SO THAT I am alerted when command processing degrades
+I WANT the CI pipeline to run `docker build` and `docker run` for the CLI component
+SO THAT every push verifies the CLI tests pass in Docker
 
 **Parent**: INPUT-STORY-001
-**Architecture Reference**: Chapter 10 — Quality Requirements; Chapter 11 — Risks and Technical Debts
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Error rate alarm triggers
+#### SCENARIO 1: CI pipeline passes for CLI component
 
 **Scenario ID**: INPUT-INFRA-001.4-S1
 
 **GIVEN**
-* the CLI Lambda error rate exceeds 5% over a 5-minute window
+* a push is made to the feature branch containing CLI changes
 
 **WHEN**
-* CloudWatch evaluates the alarm
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm state changes to `ALARM` and an SNS notification is sent
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -219,100 +223,101 @@ SO THAT invalid input never reaches the rover engine
 
 ## INFRA Sub-stories
 
-### INPUT-INFRA-002.1: Lambda deployment — validation error response
+### INPUT-INFRA-002.1: Docker build — validation component included
 
 AS A platform engineer
-I WANT the Lambda to return a structured 400 error response for invalid commands
-SO THAT API consumers receive actionable feedback
+I WANT the Dockerfile to build successfully with the validation logic present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: INPUT-STORY-002
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Invalid input returns 400
+#### SCENARIO 1: Docker image builds with validation component
 
 **Scenario ID**: INPUT-INFRA-002.1-S1
 
 **GIVEN**
-* the Lambda receives a payload with command string `FXB`
+* the Command Parser validation source is present in the repository
 
 **WHEN**
-* the parser raises a `ValueError`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* the Lambda returns HTTP 400 with body `{"error": "Invalid command 'X'. Allowed commands: F, B, L, R"}`
+* the build completes with exit code 0
 
 ---
 
-### INPUT-INFRA-002.2: Data store — validation errors are not persisted
+### INPUT-INFRA-002.2: Test execution — validation tests run in Docker
 
 AS A platform engineer
-I WANT validation errors to be discarded without writing to DynamoDB
-SO THAT the audit log contains only valid executions
+I WANT `docker run --rm kata-tests` to execute the validation test suite
+SO THAT input rejection logic is verified inside the container
 
 **Parent**: INPUT-STORY-002
-**Architecture Reference**: Chapter 8 — Cross-cutting Concepts (Error Handling)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Validation error skips DynamoDB write
+#### SCENARIO 1: Validation tests pass inside Docker
 
 **Scenario ID**: INPUT-INFRA-002.2-S1
 
 **GIVEN**
-* the Lambda receives an invalid command string
+* the `kata-tests` image has been built
 
 **WHEN**
-* the parser raises a `ValueError`
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* no record is written to the DynamoDB audit table
+* pytest collects and runs all INPUT-BE-002 tests
+* the container exits with code 0
 
 ---
 
-### INPUT-INFRA-002.3: Event handling — validation failure event
+### INPUT-INFRA-002.3: Dependencies — validation dependencies installed
 
 AS A platform engineer
-I WANT a `CommandRejected` event published to EventBridge on validation failure
-SO THAT monitoring can track invalid input rates
+I WANT all packages required by the validation component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: INPUT-STORY-002
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Rejected command publishes event
+#### SCENARIO 1: Docker build installs all validation dependencies
 
 **Scenario ID**: INPUT-INFRA-002.3-S1
 
 **GIVEN**
-* the Lambda has rejected a command string due to an invalid character
+* `requirements.txt` lists all packages needed by the validation component
 
 **WHEN**
-* the error handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `CommandRejected` event appears with the offending string and error message
+* all dependencies install without error
 
 ---
 
-### INPUT-INFRA-002.4: Monitoring and alarms — validation error rate
+### INPUT-INFRA-002.4: CI verification — validation pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch alarm on the rate of `CommandRejected` events
-SO THAT a spike in bad input is visible in the operations dashboard
+I WANT the CI pipeline to run `docker build` and `docker run` for the validation component
+SO THAT every push verifies the validation tests pass in Docker
 
 **Parent**: INPUT-STORY-002
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: High rejection rate triggers alarm
+#### SCENARIO 1: CI pipeline passes for validation component
 
 **Scenario ID**: INPUT-INFRA-002.4-S1
 
 **GIVEN**
-* more than 10 `CommandRejected` events occur within 1 minute
+* a push is made to the feature branch containing validation changes
 
 **WHEN**
-* CloudWatch evaluates the metric filter
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm transitions to `ALARM` and notifies the on-call SNS topic
-
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -369,100 +374,101 @@ SO THAT command history can be presented chronologically
 
 ## INFRA Sub-stories
 
-### INPUT-INFRA-003.1: Lambda deployment — history query handler
+### INPUT-INFRA-003.1: Docker build — history component included
 
 AS A platform engineer
-I WANT a GET endpoint deployed as a Lambda function to query command history
-SO THAT audit logs can be retrieved via HTTP
+I WANT the Dockerfile to build successfully with the history query component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: INPUT-STORY-003
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: GET request returns history
+#### SCENARIO 1: Docker image builds with history component
 
 **Scenario ID**: INPUT-INFRA-003.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with a history query handler
-* the audit log contains 2 command executions
+* the history query source is present in the repository
 
 **WHEN**
-* a GET request is sent to `/commands/history`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `[{"commandString": "FF", "finalPosition": {"x": 0, "y": 2, "heading": "NORTH"}, "timestamp": "2026-04-14T20:00:00Z"}, ...]`
+* the build completes with exit code 0
 
 ---
 
-### INPUT-INFRA-003.2: Data store — query DynamoDB audit table
+### INPUT-INFRA-003.2: Test execution — history tests run in Docker
 
 AS A platform engineer
-I WANT the history handler to query the DynamoDB audit table with a timestamp index
-SO THAT command history is retrieved efficiently
+I WANT `docker run --rm kata-tests` to execute the history query test suite
+SO THAT audit log logic is verified inside the container
 
 **Parent**: INPUT-STORY-003
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Query uses timestamp index
+#### SCENARIO 1: History tests pass inside Docker
 
 **Scenario ID**: INPUT-INFRA-003.2-S1
 
 **GIVEN**
-* the DynamoDB audit table has a GSI on `timestamp`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda queries the table
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* it uses the GSI to retrieve records ordered by timestamp
+* pytest collects and runs all INPUT-BE-003 tests
+* the container exits with code 0
 
 ---
 
-### INPUT-INFRA-003.3: Event handling — history queried event
+### INPUT-INFRA-003.3: Dependencies — history dependencies installed
 
 AS A platform engineer
-I WANT a `HistoryQueried` event published to EventBridge after each history query
-SO THAT audit access patterns are tracked
+I WANT all packages required by the history component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: INPUT-STORY-003
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: HistoryQueried event is published
+#### SCENARIO 1: Docker build installs all history dependencies
 
 **Scenario ID**: INPUT-INFRA-003.3-S1
 
 **GIVEN**
-* the Lambda has processed a history query
+* `requirements.txt` lists all packages needed by the history component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `HistoryQueried` event appears with `queryTimestamp` and `recordCount`
+* all dependencies install without error
 
 ---
 
-### INPUT-INFRA-003.4: Monitoring and alarms — history query rate
+### INPUT-INFRA-003.4: CI verification — history pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch metric tracking history query frequency
-SO THAT audit access patterns are visible
+I WANT the CI pipeline to run `docker build` and `docker run` for the history component
+SO THAT every push verifies the history tests pass in Docker
 
 **Parent**: INPUT-STORY-003
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Query metric is emitted
+#### SCENARIO 1: CI pipeline passes for history component
 
 **Scenario ID**: INPUT-INFRA-003.4-S1
 
 **GIVEN**
-* the Lambda has processed a history query
+* a push is made to the feature branch containing history changes
 
 **WHEN**
-* the Lambda publishes a custom CloudWatch metric `HistoryQueryCount`
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -558,96 +564,98 @@ SO THAT all obstacles are reachable positions
 
 ## INFRA Sub-stories
 
-### INPUT-INFRA-004.1: Lambda deployment — startup validation
+### INPUT-INFRA-004.1: Docker build — grid validation component included
 
 AS A platform engineer
-I WANT the Lambda to validate grid configuration on cold start
-SO THAT invalid configurations prevent the function from becoming ready
+I WANT the Dockerfile to build successfully with the grid validation component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: INPUT-STORY-004
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda cold start validates configuration
+#### SCENARIO 1: Docker image builds with grid validation component
 
 **Scenario ID**: INPUT-INFRA-004.1-S1
 
 **GIVEN**
-* the Lambda is deployed with grid configuration in environment variables
+* the Grid validation source is present in the repository
 
 **WHEN**
-* the Lambda performs a cold start
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it validates the configuration before accepting requests
+* the build completes with exit code 0
 
 ---
 
-### INPUT-INFRA-004.2: Data store — load configuration from DynamoDB
+### INPUT-INFRA-004.2: Test execution — grid validation tests run in Docker
 
 AS A platform engineer
-I WANT the Lambda to load grid configuration from DynamoDB at startup
-SO THAT configuration is centralized and versioned
+I WANT `docker run --rm kata-tests` to execute the grid validation test suite
+SO THAT configuration validation logic is verified inside the container
 
 **Parent**: INPUT-STORY-004
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Configuration is loaded and validated
+#### SCENARIO 1: Grid validation tests pass inside Docker
 
 **Scenario ID**: INPUT-INFRA-004.2-S1
 
 **GIVEN**
-* the DynamoDB config table contains a grid configuration record
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda cold starts
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* it loads the configuration and validates it before accepting requests
+* pytest collects and runs all INPUT-BE-004 tests
+* the container exits with code 0
 
 ---
 
-### INPUT-INFRA-004.3: Event handling — configuration validated event
+### INPUT-INFRA-004.3: Dependencies — grid validation dependencies installed
 
 AS A platform engineer
-I WANT a `ConfigurationValidated` event published to EventBridge on successful startup validation
-SO THAT deployment readiness is tracked
+I WANT all packages required by the grid validation component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: INPUT-STORY-004
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: ConfigurationValidated event is published
+#### SCENARIO 1: Docker build installs all grid validation dependencies
 
 **Scenario ID**: INPUT-INFRA-004.3-S1
 
 **GIVEN**
-* the Lambda has successfully validated its configuration
+* `requirements.txt` lists all packages needed by the Grid component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `ConfigurationValidated` event appears with `gridDimensions` and `obstacleCount`
+* all dependencies install without error
 
 ---
 
-### INPUT-INFRA-004.4: Monitoring and alarms — validation failure rate
+### INPUT-INFRA-004.4: CI verification — grid validation pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch alarm on configuration validation failures
-SO THAT invalid deployments are immediately visible
+I WANT the CI pipeline to run `docker build` and `docker run` for the grid validation component
+SO THAT every push verifies the validation tests pass in Docker
 
 **Parent**: INPUT-STORY-004
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Validation failure triggers alarm
+#### SCENARIO 1: CI pipeline passes for grid validation component
 
 **Scenario ID**: INPUT-INFRA-004.4-S1
 
 **GIVEN**
-* the Lambda has failed configuration validation on cold start
+* a push is made to the feature branch containing Grid validation changes
 
 **WHEN**
-* CloudWatch evaluates the error metric
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm transitions to `ALARM` and notifies the on-call SNS topic
+* both steps complete with exit code 0
+* the pipeline reports GREEN
