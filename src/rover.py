@@ -76,6 +76,8 @@ class Turner:
     _RIGHT = [Heading.NORTH, Heading.EAST, Heading.SOUTH, Heading.WEST]
 
     def turn(self, state: RoverState, command: str) -> RoverState:
+        if command not in {"L", "R"}:
+            raise ValueError(f"Invalid turn command '{command}'. Allowed commands: L, R")
         seq = self._LEFT if command == "L" else self._RIGHT
         new_heading = seq[(seq.index(state.heading) + 1) % 4]
         return RoverState(x=state.x, y=state.y, heading=new_heading)
@@ -93,6 +95,8 @@ class Mover:
         self.grid = grid
 
     def move(self, state: RoverState, command: str) -> RoverState:
+        if command not in {"F", "B"}:
+            raise ValueError(f"Invalid move command '{command}'. Allowed commands: F, B")
         dx, dy = self._DELTAS[state.heading]
         if command == "B":
             dx, dy = -dx, -dy
