@@ -5,12 +5,14 @@ from src.rover import RoverState, Heading, Grid
 def test_world_be_003_1_s1_state_query_returns_rover_state_without_mutation():
     # GIVEN
     state = RoverState(x=2, y=3, heading=Heading.EAST)
+    expected = RoverState(x=2, y=3, heading=Heading.EAST)
 
     # WHEN
-    result = state
+    result = RoverState(x=state.x, y=state.y, heading=state.heading)
 
     # THEN
-    assert result == RoverState(x=2, y=3, heading=Heading.EAST)
+    assert result == expected
+    assert state == expected
 
 
 def test_world_be_004_1_s1_grid_state_includes_new_obstacle():

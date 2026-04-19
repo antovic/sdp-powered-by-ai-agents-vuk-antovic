@@ -29,7 +29,7 @@ class Grid:
             raise ValueError("Grid height must be positive")
         self.width = width
         self.height = height
-        self.obstacles = obstacles or set()
+        self.obstacles = set(obstacles) if obstacles is not None else set()
         for x, y in self.obstacles:
             if not (0 <= x < width and 0 <= y < height):
                 raise ValueError(f"Obstacle at ({x},{y}) is outside grid bounds ({width}x{height})")
@@ -42,6 +42,8 @@ class Grid:
             raise ObstacleError(last_safe)
 
     def add_obstacle(self, x: int, y: int) -> None:
+        if not (0 <= x < self.width and 0 <= y < self.height):
+            raise ValueError(f"Obstacle at ({x},{y}) is outside grid bounds ({self.width}x{self.height})")
         self.obstacles.add((x, y))
 
     def remove_obstacle(self, x: int, y: int) -> None:
@@ -95,4 +97,5 @@ class Mover:
         if command == "B":
             dx, dy = -dx, -dy
         x, y = self.grid.wrap(state.x + dx, state.y + dy)
+        self.grid.validate_move(x, y, state)
         return RoverState(x=x, y=y, heading=state.heading)

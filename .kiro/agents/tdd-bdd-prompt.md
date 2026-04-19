@@ -96,11 +96,12 @@ Only commit after the full checklist passes and all tests are green.
 ## Commit Message Format
 
 ```
-#<issue> feat(<scope>): implement <STORY-ID>-S<N> <short description>
+#<issue> <type>(<scope>): implement <STORY-ID>-S<N> <short description>
 ```
 
 Rules:
 - `<issue>` — GitHub issue number (e.g. `6`)
+- `<type>` — conventional commit type: `feat` for new behaviour, `test` for test-only commits, `refactor` for refactoring steps
 - `<scope>` — component being changed in lowercase (e.g. `mover`, `parser`, `grid`)
 - `<STORY-ID>` — exact story ID from the user story file (e.g. `NAV-BE-001.1`)
 - `<N>` — scenario number
@@ -109,8 +110,8 @@ Rules:
 Examples:
 ```
 #6 feat(mover): implement NAV-BE-001.1-S1 return new position for F from north
-#6 feat(parser): implement INPUT-BE-002.1-S1 raise ValueError for unknown command
-#6 feat(grid): implement WORLD-BE-001.1-S1 raise ObstacleError with last safe state
+#6 test(parser): implement INPUT-BE-002.1-S1 raise ValueError for unknown command
+#6 refactor(grid): implement WORLD-BE-001.1-S1 extract obstacle validation
 ```
 
 ## Execution Order
