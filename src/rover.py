@@ -26,7 +26,12 @@ class Grid:
 
 
 class CommandParser:
+    _VALID = frozenset("FBLR")
+
     def parse(self, command_string: str) -> list[str]:
+        for ch in command_string:
+            if ch not in self._VALID:
+                raise ValueError(f"Invalid command '{ch}'. Allowed commands: F, B, L, R")
         return list(command_string)
 
 
