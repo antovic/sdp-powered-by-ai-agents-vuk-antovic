@@ -16,13 +16,23 @@ class RoverState:
     heading: Heading
 
 
+class ObstacleError(Exception):
+    def __init__(self, last_safe_state: "RoverState"):
+        self.last_safe_state = last_safe_state
+
+
 class Grid:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, obstacles: set[tuple[int, int]] = None):
         self.width = width
         self.height = height
+        self.obstacles = obstacles or set()
 
     def wrap(self, x: int, y: int) -> tuple[int, int]:
         return x % self.width, y % self.height
+
+    def validate_move(self, x: int, y: int, last_safe: "RoverState") -> None:
+        if (x, y) in self.obstacles:
+            raise ObstacleError(last_safe)
 
 
 class CommandParser:
