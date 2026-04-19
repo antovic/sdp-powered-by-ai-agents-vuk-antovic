@@ -25,6 +25,11 @@ class Grid:
         return x % self.width, y % self.height
 
 
+class CommandParser:
+    def parse(self, command_string: str) -> list[str]:
+        return list(command_string)
+
+
 class Turner:
     _LEFT = [Heading.NORTH, Heading.WEST, Heading.SOUTH, Heading.EAST]
     _RIGHT = [Heading.NORTH, Heading.EAST, Heading.SOUTH, Heading.WEST]
