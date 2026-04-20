@@ -16,15 +16,6 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'Dockerfile'
-      - '.dockerignore'
-      - 'requirements.txt'
-      - 'pyproject.toml'
-      - 'template.yaml'
-      - '.github/workflows/ci.yml'
 
 permissions:
   contents: read
