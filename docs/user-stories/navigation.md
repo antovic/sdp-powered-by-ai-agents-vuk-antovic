@@ -113,100 +113,103 @@ SO THAT movement is computed without mutating rover state
 
 ## INFRA Sub-stories
 
-### NAV-INFRA-001.1: Lambda deployment — movement handler
+### NAV-INFRA-001.1: Docker build — movement component included
 
 AS A platform engineer
-I WANT the movement logic (Mover component) packaged and deployed as part of the rover Lambda
-SO THAT move commands are executed in a single serverless invocation
+I WANT the Dockerfile to build successfully with the Mover component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: NAV-STORY-001
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda handles move commands
+#### SCENARIO 1: Docker image builds with Mover component
 
 **Scenario ID**: NAV-INFRA-001.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with the Mover component
-* the rover is at position (0, 0) facing North
+* the Mover component source is present in the repository
 
 **WHEN**
-* it is invoked with payload `{"commands": "FF"}`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `{"x": 0, "y": 2, "heading": "NORTH"}`
+* the build completes with exit code 0
+* the image `kata-tests` is available locally
 
 ---
 
-### NAV-INFRA-001.2: Data store — rover position in DynamoDB
+### NAV-INFRA-001.2: Test execution — movement tests run in Docker
 
 AS A platform engineer
-I WANT the rover's position stored in a DynamoDB state record after each move
-SO THAT the full `RoverState` is recoverable between invocations
+I WANT `docker run --rm kata-tests` to execute the Mover test suite
+SO THAT movement logic is verified inside the container
 
 **Parent**: NAV-STORY-001
-**Architecture Reference**: Chapter 7 — Deployment View; Chapter 5 — Building Block View (RoverState)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Position is persisted after move
+#### SCENARIO 1: Movement tests pass inside Docker
 
 **Scenario ID**: NAV-INFRA-001.2-S1
 
 **GIVEN**
-* the Lambda has processed an `F` command from `(0, 0, NORTH)`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the result is written to DynamoDB
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the record contains `x: 0, y: 1, heading: "NORTH"`
+* pytest collects and runs all NAV-BE-001 tests
+* the container exits with code 0
 
 ---
 
-### NAV-INFRA-001.3: Event handling — position changed event
+### NAV-INFRA-001.3: Dependencies — movement dependencies installed
 
 AS A platform engineer
-I WANT a `PositionChanged` event published to EventBridge after each move command
-SO THAT downstream consumers can track rover position changes independently
+I WANT all packages required by the Mover component listed in `requirements.txt`
+SO THAT `pip install -r requirements.txt` inside Docker installs everything needed
 
 **Parent**: NAV-STORY-001
-**Architecture Reference**: Chapter 6 — Runtime View (Scenario 1)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: PositionChanged event is published
+#### SCENARIO 1: Docker build installs all movement dependencies
 
 **Scenario ID**: NAV-INFRA-001.3-S1
 
 **GIVEN**
-* the Lambda has processed a move command
+* `requirements.txt` lists all packages needed by the Mover component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `PositionChanged` event appears with `previousPosition`, `newPosition`, and `roverId`
+* all dependencies install without error
+* the Mover module imports successfully inside the container
 
 ---
 
-### NAV-INFRA-001.4: Monitoring and alarms — movement Lambda
+### NAV-INFRA-001.4: CI verification — movement pipeline is GREEN
 
 AS A platform engineer
-I WANT CloudWatch alarms on the movement Lambda's error rate and p99 duration
-SO THAT I am alerted when move commands degrade in reliability
+I WANT the CI pipeline to run `docker build` and `docker run` for the movement component
+SO THAT every push verifies the Mover tests pass in Docker
 
 **Parent**: NAV-STORY-001
-**Architecture Reference**: Chapter 10 — Quality Requirements (Correctness)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Error rate alarm triggers on failures
+#### SCENARIO 1: CI pipeline passes for movement component
 
 **Scenario ID**: NAV-INFRA-001.4-S1
 
 **GIVEN**
-* the movement Lambda error rate exceeds 1% over a 5-minute window
+* a push is made to the feature branch containing Mover changes
 
 **WHEN**
-* CloudWatch evaluates the alarm
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm transitions to `ALARM` and notifies the on-call SNS topic
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -304,96 +307,98 @@ SO THAT heading changes are computed without mutating rover state
 
 ## INFRA Sub-stories
 
-### NAV-INFRA-002.1: Lambda deployment — navigation handler
+### NAV-INFRA-002.1: Docker build — navigation component included
 
 AS A platform engineer
-I WANT the navigation logic (Mover + Turner) packaged and deployed as part of the rover Lambda
-SO THAT turn commands are executed in the same serverless invocation as move commands
+I WANT the Dockerfile to build successfully with the Turner component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: NAV-STORY-002
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda handles turn commands
+#### SCENARIO 1: Docker image builds with Turner component
 
 **Scenario ID**: NAV-INFRA-002.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with the Turner component
+* the Turner component source is present in the repository
 
 **WHEN**
-* it is invoked with payload `{"commands": "LR"}`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `{"x": 0, "y": 0, "heading": "NORTH"}`
+* the build completes with exit code 0
 
 ---
 
-### NAV-INFRA-002.2: Data store — heading state in DynamoDB
+### NAV-INFRA-002.2: Test execution — navigation tests run in Docker
 
 AS A platform engineer
-I WANT the rover's heading stored alongside its position in the DynamoDB state record
-SO THAT the full `RoverState` is recoverable between invocations
+I WANT `docker run --rm kata-tests` to execute the Turner test suite
+SO THAT heading logic is verified inside the container
 
 **Parent**: NAV-STORY-002
-**Architecture Reference**: Chapter 7 — Deployment View; Chapter 5 — Building Block View (RoverState)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Heading is persisted after turn
+#### SCENARIO 1: Navigation tests pass inside Docker
 
 **Scenario ID**: NAV-INFRA-002.2-S1
 
 **GIVEN**
-* the Lambda has processed a `L` command from heading `NORTH`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the result is written to DynamoDB
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the record contains `heading: "WEST"` alongside `x` and `y`
+* pytest collects and runs all NAV-BE-002 tests
+* the container exits with code 0
 
 ---
 
-### NAV-INFRA-002.3: Event handling — heading changed event
+### NAV-INFRA-002.3: Dependencies — navigation dependencies installed
 
 AS A platform engineer
-I WANT a `HeadingChanged` event published to EventBridge after each turn command
-SO THAT downstream consumers can track rover orientation changes independently
+I WANT all packages required by the Turner component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: NAV-STORY-002
-**Architecture Reference**: Chapter 6 — Runtime View (Scenario 1)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: HeadingChanged event is published
+#### SCENARIO 1: Docker build installs all navigation dependencies
 
 **Scenario ID**: NAV-INFRA-002.3-S1
 
 **GIVEN**
-* the Lambda has processed a turn command
+* `requirements.txt` lists all packages needed by the Turner component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `HeadingChanged` event appears with `previousHeading`, `newHeading`, and `roverId`
+* all dependencies install without error
 
 ---
 
-### NAV-INFRA-002.4: Monitoring and alarms — navigation Lambda
+### NAV-INFRA-002.4: CI verification — navigation pipeline is GREEN
 
 AS A platform engineer
-I WANT CloudWatch alarms on the navigation Lambda's error rate and p99 duration
-SO THAT I am alerted when turning or movement commands degrade in reliability
+I WANT the CI pipeline to run `docker build` and `docker run` for the navigation component
+SO THAT every push verifies the Turner tests pass in Docker
 
 **Parent**: NAV-STORY-002
-**Architecture Reference**: Chapter 10 — Quality Requirements (Correctness)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Duration alarm triggers on slow execution
+#### SCENARIO 1: CI pipeline passes for navigation component
 
 **Scenario ID**: NAV-INFRA-002.4-S1
 
 **GIVEN**
-* the navigation Lambda p99 duration exceeds 1000ms over a 5-minute window
+* a push is made to the feature branch containing Turner changes
 
 **WHEN**
-* CloudWatch evaluates the alarm
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm transitions to `ALARM` and notifies the on-call SNS topic
+* both steps complete with exit code 0
+* the pipeline reports GREEN

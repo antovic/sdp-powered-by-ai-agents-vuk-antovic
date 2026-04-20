@@ -73,100 +73,103 @@ SO THAT the engine can halt execution and return a meaningful response
 
 ## INFRA Sub-stories
 
-### WORLD-INFRA-001.1: Lambda deployment — obstacle detection in rover Lambda
+### WORLD-INFRA-001.1: Docker build — obstacle detection component included
 
 AS A platform engineer
-I WANT obstacle detection logic deployed as part of the rover Lambda
-SO THAT obstacle checks happen in-process without a network call
+I WANT the Dockerfile to build successfully with the Grid obstacle detection component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: WORLD-STORY-001
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda returns obstacle report
+#### SCENARIO 1: Docker image builds with obstacle detection component
 
 **Scenario ID**: WORLD-INFRA-001.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with the Grid component
-* the grid is initialised with an obstacle at (0, 1)
+* the Grid component source with obstacle detection is present in the repository
 
 **WHEN**
-* the Lambda is invoked with `{"commands": "F"}` and rover at (0, 0) facing North
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* the Lambda returns HTTP 200 with body `{"status": "obstacle", "lastSafePosition": {"x": 0, "y": 0, "heading": "NORTH"}}`
+* the build completes with exit code 0
+* the image `kata-tests` is available locally
 
 ---
 
-### WORLD-INFRA-001.2: Data store — obstacle map in DynamoDB
+### WORLD-INFRA-001.2: Test execution — obstacle detection tests run in Docker
 
 AS A platform engineer
-I WANT the grid's obstacle positions stored in a DynamoDB table
-SO THAT the Lambda can load the current obstacle map on each invocation without hardcoding it
+I WANT `docker run --rm kata-tests` to execute the obstacle detection test suite
+SO THAT collision logic is verified inside the container
 
 **Parent**: WORLD-STORY-001
-**Architecture Reference**: Chapter 7 — Deployment View; Chapter 5 — Building Block View (Grid)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Obstacle map is loaded from DynamoDB
+#### SCENARIO 1: Obstacle detection tests pass inside Docker
 
 **Scenario ID**: WORLD-INFRA-001.2-S1
 
 **GIVEN**
-* a DynamoDB table `rover-grid` contains an item `{gridId: "mars-1", obstacles: [[0,1],[3,4]]}`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda initialises the Grid component
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the Grid is constructed with obstacles at `(0,1)` and `(3,4)`
+* pytest collects and runs all WORLD-BE-001 tests
+* the container exits with code 0
 
 ---
 
-### WORLD-INFRA-001.3: Event handling — obstacle detected event
+### WORLD-INFRA-001.3: Dependencies — obstacle detection dependencies installed
 
 AS A platform engineer
-I WANT an `ObstacleDetected` event published to EventBridge whenever the rover is blocked
-SO THAT mission control systems can react to obstacle events asynchronously
+I WANT all packages required by the Grid component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: WORLD-STORY-001
-**Architecture Reference**: Chapter 6 — Runtime View (Scenario 2: Obstacle Detected)
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: ObstacleDetected event is published
+#### SCENARIO 1: Docker build installs all obstacle detection dependencies
 
 **Scenario ID**: WORLD-INFRA-001.3-S1
 
 **GIVEN**
-* the Lambda has caught an `ObstacleError`
+* `requirements.txt` lists all packages needed by the Grid component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* an `ObstacleDetected` event appears with `lastSafePosition`, `attemptedPosition`, and `roverId`
+* all dependencies install without error
+* the Grid module imports successfully inside the container
 
 ---
 
-### WORLD-INFRA-001.4: Monitoring and alarms — obstacle detection rate
+### WORLD-INFRA-001.4: CI verification — obstacle detection pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch alarm on the rate of `ObstacleDetected` events
-SO THAT a sudden increase in obstacle collisions is visible and alertable
+I WANT the CI pipeline to run `docker build` and `docker run` for the obstacle detection component
+SO THAT every push verifies the obstacle tests pass in Docker
 
 **Parent**: WORLD-STORY-001
-**Architecture Reference**: Chapter 10 — Quality Requirements; Chapter 11 — Risks and Technical Debts
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: High obstacle rate triggers alarm
+#### SCENARIO 1: CI pipeline passes for obstacle detection component
 
 **Scenario ID**: WORLD-INFRA-001.4-S1
 
 **GIVEN**
-* more than 5 `ObstacleDetected` events occur within 1 minute
+* a push is made to the feature branch containing Grid obstacle changes
 
 **WHEN**
-* CloudWatch evaluates the metric filter on the EventBridge log
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the alarm transitions to `ALARM` and notifies the on-call SNS topic
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -239,100 +242,101 @@ SO THAT the rover always stays within the defined grid dimensions
 
 ## INFRA Sub-stories
 
-### WORLD-INFRA-002.1: Lambda deployment — boundary logic in rover Lambda
+### WORLD-INFRA-002.1: Docker build — boundary component included
 
 AS A platform engineer
-I WANT boundary enforcement deployed as part of the rover Lambda
-SO THAT no out-of-bounds position is ever persisted or returned
+I WANT the Dockerfile to build successfully with the Grid boundary component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: WORLD-STORY-002
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Lambda wraps boundary correctly
+#### SCENARIO 1: Docker image builds with boundary component
 
 **Scenario ID**: WORLD-INFRA-002.1-S1
 
 **GIVEN**
-* the Lambda is deployed with a 5×5 grid
-* the rover is at (0, 4) facing North
+* the Grid boundary source is present in the repository
 
 **WHEN**
-* invoked with `{"commands": "F"}`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* the response contains `{"x": 0, "y": 0, "heading": "NORTH"}`
+* the build completes with exit code 0
 
 ---
 
-### WORLD-INFRA-002.2: Data store — grid dimensions in DynamoDB
+### WORLD-INFRA-002.2: Test execution — boundary tests run in Docker
 
 AS A platform engineer
-I WANT the grid dimensions stored in DynamoDB alongside the obstacle map
-SO THAT the Lambda can load both grid size and obstacles from a single record
+I WANT `docker run --rm kata-tests` to execute the boundary wrapping test suite
+SO THAT wrap-around logic is verified inside the container
 
 **Parent**: WORLD-STORY-002
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Grid dimensions are loaded from DynamoDB
+#### SCENARIO 1: Boundary tests pass inside Docker
 
 **Scenario ID**: WORLD-INFRA-002.2-S1
 
 **GIVEN**
-* the `rover-grid` DynamoDB item contains `{width: 5, height: 5}`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda initialises the Grid
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the Grid is constructed with `width=5` and `height=5`
+* pytest collects and runs all WORLD-BE-002 tests
+* the container exits with code 0
 
 ---
 
-### WORLD-INFRA-002.3: Event handling — boundary wrap event
+### WORLD-INFRA-002.3: Dependencies — boundary dependencies installed
 
 AS A platform engineer
-I WANT a `BoundaryWrapped` event published to EventBridge when the rover wraps around the grid
-SO THAT mission control can track wrap-around behaviour for telemetry
+I WANT all packages required by the Grid boundary component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: WORLD-STORY-002
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: BoundaryWrapped event is published
+#### SCENARIO 1: Docker build installs all boundary dependencies
 
 **Scenario ID**: WORLD-INFRA-002.3-S1
 
 **GIVEN**
-* the rover has wrapped from (0, 4) to (0, 0)
+* `requirements.txt` lists all packages needed by the Grid component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `BoundaryWrapped` event appears with `fromPosition`, `toPosition`, and `roverId`
+* all dependencies install without error
 
 ---
 
-### WORLD-INFRA-002.4: Monitoring and alarms — boundary wrap rate
+### WORLD-INFRA-002.4: CI verification — boundary pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch metric tracking the frequency of boundary wraps
-SO THAT unusual wrap patterns are visible in the operations dashboard
+I WANT the CI pipeline to run `docker build` and `docker run` for the boundary component
+SO THAT every push verifies the boundary tests pass in Docker
 
 **Parent**: WORLD-STORY-002
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Wrap metric is emitted
+#### SCENARIO 1: CI pipeline passes for boundary component
 
 **Scenario ID**: WORLD-INFRA-002.4-S1
 
 **GIVEN**
-* the Lambda has processed a command that caused a boundary wrap
+* a push is made to the feature branch containing Grid boundary changes
 
 **WHEN**
-* the Lambda publishes a custom CloudWatch metric `BoundaryWrapCount`
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -389,101 +393,101 @@ SO THAT position can be retrieved without side effects
 
 ## INFRA Sub-stories
 
-### WORLD-INFRA-003.1: Lambda deployment — state query handler
+### WORLD-INFRA-003.1: Docker build — state query component included
 
 AS A platform engineer
-I WANT a GET endpoint deployed as a Lambda function to query rover state
-SO THAT position can be retrieved via HTTP without issuing commands
+I WANT the Dockerfile to build successfully with the RoverState query component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: WORLD-STORY-003
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: GET request returns rover state
+#### SCENARIO 1: Docker image builds with state query component
 
 **Scenario ID**: WORLD-INFRA-003.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with a state query handler
-* the rover is at position (2, 3) facing East
+* the RoverState query source is present in the repository
 
 **WHEN**
-* a GET request is sent to `/rover/state`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `{"x": 2, "y": 3, "heading": "EAST"}`
+* the build completes with exit code 0
 
 ---
 
-### WORLD-INFRA-003.2: Data store — read rover state from DynamoDB
+### WORLD-INFRA-003.2: Test execution — state query tests run in Docker
 
 AS A platform engineer
-I WANT the state query handler to read from the DynamoDB rover state table
-SO THAT the current position is retrieved from persistent storage
+I WANT `docker run --rm kata-tests` to execute the state query test suite
+SO THAT read-only state access is verified inside the container
 
 **Parent**: WORLD-STORY-003
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: State is read from DynamoDB
+#### SCENARIO 1: State query tests pass inside Docker
 
 **Scenario ID**: WORLD-INFRA-003.2-S1
 
 **GIVEN**
-* the DynamoDB table contains a record with `x: 2, y: 3, heading: "EAST"`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda queries the table
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* it retrieves the record and returns the state
+* pytest collects and runs all WORLD-BE-003 tests
+* the container exits with code 0
 
 ---
 
-### WORLD-INFRA-003.3: Event handling — state query event
+### WORLD-INFRA-003.3: Dependencies — state query dependencies installed
 
 AS A platform engineer
-I WANT a `StateQueried` event published to EventBridge after each state query
-SO THAT telemetry can track query frequency independently
+I WANT all packages required by the RoverState component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: WORLD-STORY-003
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: StateQueried event is published
+#### SCENARIO 1: Docker build installs all state query dependencies
 
 **Scenario ID**: WORLD-INFRA-003.3-S1
 
 **GIVEN**
-* the Lambda has processed a state query
+* `requirements.txt` lists all packages needed by the RoverState component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* a `StateQueried` event appears with `roverId` and `timestamp`
+* all dependencies install without error
 
 ---
 
-### WORLD-INFRA-003.4: Monitoring and alarms — state query rate
+### WORLD-INFRA-003.4: CI verification — state query pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch metric tracking the frequency of state queries
-SO THAT query patterns are visible in the operations dashboard
+I WANT the CI pipeline to run `docker build` and `docker run` for the state query component
+SO THAT every push verifies the state query tests pass in Docker
 
 **Parent**: WORLD-STORY-003
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Query metric is emitted
+#### SCENARIO 1: CI pipeline passes for state query component
 
 **Scenario ID**: WORLD-INFRA-003.4-S1
 
 **GIVEN**
-* the Lambda has processed a state query
+* a push is made to the feature branch containing RoverState changes
 
 **WHEN**
-* the Lambda publishes a custom CloudWatch metric `StateQueryCount`
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
-
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -542,99 +546,101 @@ SO THAT the obstacle is immediately active for collision detection
 
 ## INFRA Sub-stories
 
-### WORLD-INFRA-004.1: Lambda deployment — add obstacle handler
+### WORLD-INFRA-004.1: Docker build — add obstacle component included
 
 AS A platform engineer
-I WANT a POST endpoint deployed as a Lambda function to add obstacles
-SO THAT obstacles can be inserted via HTTP
+I WANT the Dockerfile to build successfully with the add-obstacle component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: WORLD-STORY-004
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: POST request adds obstacle
+#### SCENARIO 1: Docker image builds with add-obstacle component
 
 **Scenario ID**: WORLD-INFRA-004.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with an add-obstacle handler
+* the Grid add-obstacle source is present in the repository
 
 **WHEN**
-* a POST request is sent to `/grid/obstacles` with body `{"x": 2, "y": 3}`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 201 with body `{"message": "Obstacle added at (2, 3)"}`
+* the build completes with exit code 0
 
 ---
 
-### WORLD-INFRA-004.2: Data store — persist obstacle in DynamoDB
+### WORLD-INFRA-004.2: Test execution — add obstacle tests run in Docker
 
 AS A platform engineer
-I WANT new obstacles written to the DynamoDB grid table
-SO THAT they persist across Lambda invocations
+I WANT `docker run --rm kata-tests` to execute the add-obstacle test suite
+SO THAT obstacle insertion logic is verified inside the container
 
 **Parent**: WORLD-STORY-004
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Obstacle is persisted
+#### SCENARIO 1: Add obstacle tests pass inside Docker
 
 **Scenario ID**: WORLD-INFRA-004.2-S1
 
 **GIVEN**
-* the Lambda has processed an add-obstacle command for (2, 3)
+* the `kata-tests` image has been built
 
 **WHEN**
-* the handler writes to DynamoDB
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the grid record's `obstacles` attribute includes `[2, 3]`
+* pytest collects and runs all WORLD-BE-004 tests
+* the container exits with code 0
 
 ---
 
-### WORLD-INFRA-004.3: Event handling — obstacle added event
+### WORLD-INFRA-004.3: Dependencies — add obstacle dependencies installed
 
 AS A platform engineer
-I WANT an `ObstacleAdded` event published to EventBridge after adding an obstacle
-SO THAT downstream systems can react to terrain changes
+I WANT all packages required by the Grid add-obstacle component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: WORLD-STORY-004
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: ObstacleAdded event is published
+#### SCENARIO 1: Docker build installs all add-obstacle dependencies
 
 **Scenario ID**: WORLD-INFRA-004.3-S1
 
 **GIVEN**
-* the Lambda has added an obstacle at (2, 3)
+* `requirements.txt` lists all packages needed by the Grid component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* an `ObstacleAdded` event appears with `coordinate: {x: 2, y: 3}` and `gridId`
+* all dependencies install without error
 
 ---
 
-### WORLD-INFRA-004.4: Monitoring and alarms — obstacle modification rate
+### WORLD-INFRA-004.4: CI verification — add obstacle pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch metric tracking obstacle add/remove operations
-SO THAT terrain modification patterns are visible
+I WANT the CI pipeline to run `docker build` and `docker run` for the add-obstacle component
+SO THAT every push verifies the add-obstacle tests pass in Docker
 
 **Parent**: WORLD-STORY-004
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Add metric is emitted
+#### SCENARIO 1: CI pipeline passes for add-obstacle component
 
 **Scenario ID**: WORLD-INFRA-004.4-S1
 
 **GIVEN**
-* the Lambda has added an obstacle
+* a push is made to the feature branch containing Grid add-obstacle changes
 
 **WHEN**
-* the Lambda publishes a custom CloudWatch metric `ObstacleAddCount`
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+* both steps complete with exit code 0
+* the pipeline reports GREEN
 
 ---
 
@@ -692,97 +698,98 @@ SO THAT the coordinate is immediately passable
 
 ## INFRA Sub-stories
 
-### WORLD-INFRA-005.1: Lambda deployment — remove obstacle handler
+### WORLD-INFRA-005.1: Docker build — remove obstacle component included
 
 AS A platform engineer
-I WANT a DELETE endpoint deployed as a Lambda function to remove obstacles
-SO THAT obstacles can be deleted via HTTP
+I WANT the Dockerfile to build successfully with the remove-obstacle component present
+SO THAT `docker build -t kata-tests .` produces a runnable image
 
 **Parent**: WORLD-STORY-005
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: DELETE request removes obstacle
+#### SCENARIO 1: Docker image builds with remove-obstacle component
 
 **Scenario ID**: WORLD-INFRA-005.1-S1
 
 **GIVEN**
-* the rover Lambda is deployed with a remove-obstacle handler
-* an obstacle exists at (2, 3)
+* the Grid remove-obstacle source is present in the repository
 
 **WHEN**
-* a DELETE request is sent to `/grid/obstacles/2/3`
+* `docker build -t kata-tests .` is executed
 
 **THEN**
-* it returns HTTP 200 with body `{"message": "Obstacle removed from (2, 3)"}`
+* the build completes with exit code 0
 
 ---
 
-### WORLD-INFRA-005.2: Data store — delete obstacle from DynamoDB
+### WORLD-INFRA-005.2: Test execution — remove obstacle tests run in Docker
 
 AS A platform engineer
-I WANT removed obstacles deleted from the DynamoDB grid table
-SO THAT they do not reappear on Lambda restart
+I WANT `docker run --rm kata-tests` to execute the remove-obstacle test suite
+SO THAT obstacle deletion logic is verified inside the container
 
 **Parent**: WORLD-STORY-005
 **Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Obstacle is deleted
+#### SCENARIO 1: Remove obstacle tests pass inside Docker
 
 **Scenario ID**: WORLD-INFRA-005.2-S1
 
 **GIVEN**
-* the DynamoDB grid record contains obstacle `[2, 3]`
+* the `kata-tests` image has been built
 
 **WHEN**
-* the Lambda processes a remove-obstacle command
+* `docker run --rm kata-tests` is executed
 
 **THEN**
-* the grid record's `obstacles` attribute no longer includes `[2, 3]`
+* pytest collects and runs all WORLD-BE-005 tests
+* the container exits with code 0
 
 ---
 
-### WORLD-INFRA-005.3: Event handling — obstacle removed event
+### WORLD-INFRA-005.3: Dependencies — remove obstacle dependencies installed
 
 AS A platform engineer
-I WANT an `ObstacleRemoved` event published to EventBridge after removing an obstacle
-SO THAT downstream systems can react to terrain changes
+I WANT all packages required by the Grid remove-obstacle component listed in `requirements.txt`
+SO THAT the Docker build installs everything needed
 
 **Parent**: WORLD-STORY-005
-**Architecture Reference**: Chapter 6 — Runtime View
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: ObstacleRemoved event is published
+#### SCENARIO 1: Docker build installs all remove-obstacle dependencies
 
 **Scenario ID**: WORLD-INFRA-005.3-S1
 
 **GIVEN**
-* the Lambda has removed an obstacle from (2, 3)
+* `requirements.txt` lists all packages needed by the Grid component
 
 **WHEN**
-* the event handler publishes to EventBridge
+* `docker build -t kata-tests .` runs `pip install -r requirements.txt`
 
 **THEN**
-* an `ObstacleRemoved` event appears with `coordinate: {x: 2, y: 3}` and `gridId`
+* all dependencies install without error
 
 ---
 
-### WORLD-INFRA-005.4: Monitoring and alarms — obstacle modification rate
+### WORLD-INFRA-005.4: CI verification — remove obstacle pipeline is GREEN
 
 AS A platform engineer
-I WANT a CloudWatch metric tracking obstacle remove operations
-SO THAT terrain modification patterns are visible
+I WANT the CI pipeline to run `docker build` and `docker run` for the remove-obstacle component
+SO THAT every push verifies the remove-obstacle tests pass in Docker
 
 **Parent**: WORLD-STORY-005
-**Architecture Reference**: Chapter 10 — Quality Requirements
+**Architecture Reference**: Chapter 7 — Deployment View
 
-#### SCENARIO 1: Remove metric is emitted
+#### SCENARIO 1: CI pipeline passes for remove-obstacle component
 
 **Scenario ID**: WORLD-INFRA-005.4-S1
 
 **GIVEN**
-* the Lambda has removed an obstacle
+* a push is made to the feature branch containing Grid remove-obstacle changes
 
 **WHEN**
-* the Lambda publishes a custom CloudWatch metric `ObstacleRemoveCount`
+* the CI pipeline executes `docker build -t kata-tests .` and `docker run --rm kata-tests`
 
 **THEN**
-* the metric appears in the `MarsRover` CloudWatch namespace with value `1`
+* both steps complete with exit code 0
+* the pipeline reports GREEN
