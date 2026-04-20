@@ -42,7 +42,7 @@ jobs:
         run: docker build -t kata-tests .
 
       - name: Run tests
-        run: docker run --rm kata-tests
+        run: docker run --rm kata-tests python -m pytest
 
   deploy:
     runs-on: ubuntu-latest
