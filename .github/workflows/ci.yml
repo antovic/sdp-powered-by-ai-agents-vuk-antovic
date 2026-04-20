@@ -25,6 +25,9 @@ on:
       - 'pyproject.toml'
       - 'template.yaml'
       - '.github/workflows/ci.yml'
+      - 'docs/**'
+      - 'README.md'
+      - 'LICENSE'
 
 permissions:
   contents: read

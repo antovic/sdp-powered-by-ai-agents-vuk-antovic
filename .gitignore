@@ -10,3 +10,5 @@ build/
 .env
 .venv
 venv/
+docs/_build/
+docs/README.md
