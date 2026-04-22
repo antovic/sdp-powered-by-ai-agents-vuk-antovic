@@ -16,17 +16,17 @@ Extracted from `architecture/04-solution-strategy.md` — Chapter 4: Solution St
 
 | Story ID | Title | Domain | Priority | Type | Status |
 |----------|-------|--------|----------|------|--------|
-| INPUT-STORY-001 | Submit a command sequence via CLI | INPUT | 1 | [CORE] | ⬜ pending |
-| INPUT-STORY-002 | Reject invalid commands at parse time | INPUT | 4 | [SUPPORTING] | ⬜ pending |
-| INPUT-STORY-003 | Log command execution history | INPUT | 8 | [SUPPORTING] | ⬜ pending |
-| INPUT-STORY-004 | Validate grid configuration at startup | INPUT | 9 | [SUPPORTING] | ⬜ pending |
-| NAV-STORY-001 | Move the rover forward and backward | NAV | 2 | [CORE] | ⬜ pending |
-| NAV-STORY-002 | Turn the rover left and right | NAV | 3 | [CORE] | ⬜ pending |
-| WORLD-STORY-001 | Detect and report an obstacle | WORLD | 5 | [SUPPORTING] | ⬜ pending |
-| WORLD-STORY-002 | Enforce grid boundaries | WORLD | 6 | [SUPPORTING] | ⬜ pending |
-| WORLD-STORY-003 | Report current rover position | WORLD | 7 | [SUPPORTING] | ⬜ pending |
-| WORLD-STORY-004 | Add obstacle to grid at runtime | WORLD | 10 | [SUPPORTING] | ⬜ pending |
-| WORLD-STORY-005 | Remove obstacle from grid | WORLD | 11 | [SUPPORTING] | ⬜ pending |
+| INPUT-STORY-001 | Submit a command sequence via CLI | INPUT | 1 | [CORE] | ✅ done |
+| INPUT-STORY-002 | Reject invalid commands at parse time | INPUT | 4 | [SUPPORTING] | ✅ done |
+| INPUT-STORY-003 | Log command execution history | INPUT | 8 | [SUPPORTING] | ✅ done |
+| INPUT-STORY-004 | Validate grid configuration at startup | INPUT | 9 | [SUPPORTING] | ✅ done |
+| NAV-STORY-001 | Move the rover forward and backward | NAV | 2 | [CORE] | ✅ done |
+| NAV-STORY-002 | Turn the rover left and right | NAV | 3 | [CORE] | ✅ done |
+| WORLD-STORY-001 | Detect and report an obstacle | WORLD | 5 | [SUPPORTING] | ✅ done |
+| WORLD-STORY-002 | Enforce grid boundaries | WORLD | 6 | [SUPPORTING] | ✅ done |
+| WORLD-STORY-003 | Report current rover position | WORLD | 7 | [SUPPORTING] | ✅ done |
+| WORLD-STORY-004 | Add obstacle to grid at runtime | WORLD | 10 | [SUPPORTING] | ✅ done |
+| WORLD-STORY-005 | Remove obstacle from grid | WORLD | 11 | [SUPPORTING] | ✅ done |
 
 **Total stories**: 11
 **Core stories (20% → 80% value)**: INPUT-STORY-001, NAV-STORY-001, NAV-STORY-002 — 3 stories (27% of inventory marked core)
@@ -40,8 +40,8 @@ Extracted from `architecture/04-solution-strategy.md` — Chapter 4: Solution St
 | Metric | Value |
 |--------|-------|
 | Core stories total | 3 |
-| Core stories complete | 0 |
-| Pareto progress | 0 of 3 core stories complete (0% of 80% value delivered) |
+| Core stories complete | 3 |
+| Pareto progress | 3 of 3 core stories complete (100% of 80% value delivered) |
 
 ---
 
