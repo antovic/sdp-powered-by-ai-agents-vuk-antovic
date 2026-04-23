@@ -28,11 +28,22 @@ The rover engine is composed of four pure components:
 
 All state is immutable (`RoverState` is a frozen dataclass). See `docs/architecture/` for full arc42 documentation.
 
-## Build and run locally
+## Build Docker image
 
 ```bash
 docker build -t kata-tests .
+```
+
+## Run tests in Docker
+
+```bash
 docker run --rm kata-tests
+```
+
+## Run CLI in Docker
+
+```bash
+docker run --rm -it kata-tests python -m src.main
 ```
 
 ## Run tests locally
